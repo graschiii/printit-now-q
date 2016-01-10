@@ -1,0 +1,49 @@
+' "C:\Program Files (x86)\Microsoft SQL Server\110\Tools\Binn\rs.exe" -i C:\tools\EXPORTREPORT.rss -s "localhost/ReportServer_SQL2012" -v FILENAME="c:\tools\stores_near_me.pdf" -v REPORTSERVER_FOLDER="/AdventureWorks Sample Reports/Customers_Near_Stores" -t  -v FORMAT="PDF" -e Exec2005
+' Prepare report parameters.
+' Dim parameters(2) As ParameterValue
+' parameters(0) = New ParameterValue()
+' parameters(0).Name = "EmpID"
+' parameters(0).Value = "38"
+' parameters(1) = New ParameterValue()
+' parameters(1).Name = "ReportMonth"
+' parameters(1).Value = "6" ' June
+' parameters(2) = New ParameterValue()
+' parameters(2).Name = "ReportYear"
+' parameters(2).Value = "2004"
+' rs.Render(reportPath, format, historyID, devInfo, parameters, _
+'            credentials, showHideToggle, encoding, mimeType, reportHistoryParameters, warnings, streamIDs)
+
+Public Sub Main()
+
+'Report Parameters
+ Dim parameters(1) As ParameterValue
+ parameters(0) = New ParameterValue()
+ parameters(0).Name = "OrderNumber"
+ parameters(0).Value = "111176"
+TRY
+
+ DIM historyID as string = Nothing
+ DIM deviceInfo as string = Nothing
+ DIM extension as string = Nothing
+ DIM encoding as string
+ DIM mimeType as string = "application/Excel"
+ DIM warnings() AS Warning = Nothing
+ DIM streamIDs() as string = Nothing
+ DIM results() as Byte
+ 
+
+ rs.Credentials = System.Net.CredentialCache.DefaultCredentials
+ rs.LoadReport(REPORTSERVER_FOLDER, historyID)
+ rs.SetExecutionParameters(parameters, "en-us")
+    
+ results = rs.Render(FORMAT, deviceInfo, extension, mimeType, encoding, warnings, streamIDs)
+
+ DIM stream As FileStream = File.OpenWrite(FILENAME)
+ stream.Write(results, 0, results.Length)
+ stream.Close()
+ 
+Catch e As IOException
+  Console.WriteLine(e.Message)
+End Try
+
+End Sub
