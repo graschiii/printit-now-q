@@ -35,7 +35,11 @@ namespace Server
         /// </summary>
         public RabbitConsumer()
         {
+            // If running interactively display the settings
+            if (Environment.UserInteractive)
+            {
             DisplaySettings();
+            }
             _connectionFactory = new ConnectionFactory
             {
                 HostName = HostName,
@@ -76,21 +80,35 @@ namespace Server
 
             while (Enabled)
             {
-                //Get next message
+                // Get next message
                 var deliveryArgs = (BasicDeliverEventArgs)consumer.Queue.Dequeue();
 
-                //Serialize message
+                // Serialize message
                 var message = Encoding.Default.GetString(deliveryArgs.Body);
-                    
-                Console.WriteLine("Message Received - {0}", message);
-                _model.BasicAck(deliveryArgs.DeliveryTag, false);
-
-                var reportRequest = new ReportGenerate();
-                reportRequest.GenerateReport();
-                // Set the name of the file
-                reportRequest.fileName = message;
-                reportRequest.SaveReportToDisk();
                 
+                // If running interactively display the message received
+                if (Environment.UserInteractive)
+                {
+                    Console.WriteLine("Message Received - {0}", message);
+                }
+                // Acknowledge the message
+                _model.BasicAck(deliveryArgs.DeliveryTag, false);
+                // Create the report request instance
+                if (message != "QUIT!")
+                    {
+                    var reportRequest = new ReportGenerate();
+                    // Initialize the parameters for the report
+                    reportRequest.initParameterValues(message);
+                    // Generate the report
+                    reportRequest.GenerateReport();
+                    // Put it on the disk
+                    reportRequest.SaveReportToDisk();
+                    }
+                else
+                {
+                    Enabled = false;
+                    Environment.Exit(0);
+                }
 
             }
         }
